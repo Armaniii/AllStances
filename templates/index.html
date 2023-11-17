@@ -1,0 +1,302 @@
+
+<html>
+    <!-- reference main.css-->
+    <link href="{{ url_for('static', filename='main.css') }}" rel="stylesheet" type="text/css" >
+    <!-- <link href="{{ url_for('static', filename='template.scss') }}" rel="stylesheet" type="text/css" > -->
+
+    <!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src = "https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src = "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+
+    <!-- <script src="{{ url_for('static', filename='index.js') }}"></script> -->
+    <!-- <script src="https://kit.fontawesome.com/9b8a7e18a0.js"></script> -->
+    <script src="https://kit.fontawesome.com/7c05aa6996.js" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const mainForm = document.getElementById("main-form");
+            const arguments = document.getElementById("arguments");
+            var loadingIcon = document.getElementsByClassName("loading-icon")[0];
+            document.getElementById("arguments").style.display = "none";
+            console.log(mainForm)
+            // #dd2a19
+            // #8c63a6
+            // #2062a6
+
+            mainForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                loadingIcon.style.display = "flex";
+                document.getElementsByClassName("sorry")[0].style.display = "flex";
+                document.getElementById("arguments").style.display = "none";
+                fetch('/', {method:'POST', body: new FormData(mainForm)})
+                .then(() => {
+                    fetch('/publish', {method: 'GET'})
+                    .then(response => {return response.json()
+                    })
+                    .then(data => {
+                        loadingIcon.style.display = "none";
+                        document.getElementsByClassName("sorry")[0].style.display = "none";
+                        const htmlContent = generateHTML(data);
+                        console.log(htmlContent)
+                        document.getElementById("arguments").style.display = "flex";
+                        document.getElementById("arguments").innerHTML = htmlContent; // Update the container with the new HTML
+                    });
+                });
+            });
+        });
+            function generateHTML(args) {
+            let html = '';
+            console.log(args)
+            for (const [core, supporting_arguments] of Object.entries(args)) {
+                html += `<div class="card">
+                            <div class="card-header">
+                                <h2>${core}</h2>
+                            </div>
+                            <div class="card-body">
+                                <ul>`;
+                supporting_arguments.forEach(arg => {
+                    html += `<li>${arg}</li>`;
+                });
+                html += `       </ul>
+                            </div>
+                        </div>`;
+            }
+            return html;
+        }
+              
+
+    </script>
+    
+    <script type="text/javascript">
+          
+          $(document).on('ready', function() {
+  
+                $('.field').on('focus', function() {
+                    $('body').addClass('is-focus');
+                });
+                
+                $('.field').on('blur', function() {
+                    $('body').removeClass('is-focus is-type');
+                });
+                
+                $('.field').on('keydown', function(event) {
+                    $('body').addClass('is-type');
+                    if((event.which === 8) && $(this).val() === '') {
+                    $('body').removeClass('is-type');
+                    }
+                });
+                
+            });
+        
+
+        function clickToExapndCards(obj){
+            var clickedElement = $(obj)
+            console.log(clickedElement)
+            if (clickedElement.hasClass('expanded')) {
+            clickedElement.find('.elab').hide('slow');
+            clickedElement.removeClass('expanded');
+            } else {
+            clickedElement.find('.elab').show('slow');
+            clickedElement.addClass('expanded');
+            }
+            
+        };
+        // });
+        function updateSliderValue(value) {
+            document.getElementById('sliderValue').textContent = 'Current value: ' + value;
+            document.getElementById('slider').value = value;
+        }
+
+        function generateContent()
+        {
+            var searchContainer = document.getElementById("search-container");
+            searchContainer.style.position = "absolute";
+            searchContainer.style.top = "100px";
+            searchContainer.style.left = "0";
+        }
+
+      
+        function showFilters() {
+            var searchContainer = document.getElementsByClassName("advanced-search")[0];
+            if (searchContainer.style.display === "none") {
+                searchContainer.style.display = "flex";
+            } else {
+                searchContainer.style.display = "none";
+            }
+        }
+        
+        function moveSearchBar() {
+            // fetch('/publish', {method: 'POST'})
+
+            var searchContainer = document.getElementsByClassName("search_box")[0];
+            var filterContainer = document.getElementsByClassName("advanced-search")[0];
+            searchContainer.style.transform = "translate(0, -250px)";
+            filterContainer.style.transform = "translate(0, -250px)";
+        }
+
+        
+    </script>
+
+
+    <script>
+         $(function() {
+            $('.congress-tooltip').tooltip({
+               items: 'i.congress-tooltip',
+               tooltipClass: "tooltip-style",
+               content: 'Selecting this will allow the LLM to access US Congressional Agricultural Hearing Data',
+               show: "slideDown", // show immediately
+               hide: "slideUp", // hide slowly
+               open: function(event, ui) {
+                  ui.tooltip.hover(
+                  function () {
+                     $(this).fadeTo("slow", 0.5);
+                     $(this).css('cursor', 'pointer');
+                  });
+               }
+            });
+         });
+
+         $(function() {
+            $('.reddit-tooltip').tooltip({
+               items: 'i.reddit-tooltip',
+               tooltipClass: "tooltip-style",
+               content: 'Selecting this will allow the LLM to access Reddit Agricultural Data',
+               show: "slideDown", // show immediately
+               hide: "slideUp", // hide slowly
+               open: function(event, ui) {
+                  ui.tooltip.hover(
+                  function () {
+                     $(this).fadeTo("slow", 0.5);
+                     $(this).css('cursor', 'pointer');
+                  });
+               }
+            });
+         });
+         $(function() {
+            $('.general-tooltip').tooltip({
+               items: 'i.general-tooltip',
+               tooltipClass: "tooltip-style",
+               content: 'By Default, the LLM will use general knowledge to generate arguments. Selecting this will allow the LLM to access general knowledge data',
+               show: "slideDown", // show immediately
+               hide: "slideUp", // hide slowly
+               open: function(event, ui) {
+                  ui.tooltip.hover(
+                  function () {
+                     $(this).fadeTo("slow", 0.5);
+                     $(this).css('cursor', 'pointer');
+                  });
+               }
+            });
+         });
+
+         $(function() {
+            $('.diversity-tooltip').tooltip({
+               items: 'i.diversity-tooltip',
+               tooltipClass: "tooltip-style",
+               content: 'A higher value indicates more diversity in the arguments retrieved. A lower value indicates less diversity in the arguments retrieved.',
+               show: "slideDown", // show immediately
+               hide: "slideUp", // hide slowly
+               open: function(event, ui) {
+                  ui.tooltip.hover(
+                  function () {
+                     $(this).fadeTo("slow", 0.5);
+                     $(this).css('cursor', 'pointer');
+                  });
+               }
+            });
+         });
+
+
+         </script>
+    <body>
+
+        <div class="logo">
+            <img src="{{ url_for('static', filename='allstances_logo_2.png') }}" alt="logo" class="center">
+        </div>
+        {% if user.is_authenticated %}
+           <a href="{{ url_for('logout') }}" class="logout">Logout</a>
+        {% else %}
+        <div class="login">
+            <a href="{{ url_for('login') }}">Login</a>
+        </div>
+        {% endif %}
+       
+
+
+
+        <form id= "main-form" method="post"  class="query" onsubmit="moveSearchBar()">
+            <div class = "search_box">
+                <div class = "search">
+                <div class="select_area">
+                    <i><img src = " {{ url_for('static', filename='allsides_icon.png') }}" width="75%" height ="75%" ></i>
+                    <div class="line"> </div>
+                <div class = "text_and-icon">
+                <input type="text" name="search_query" id="search_text" class="search_text" placeholder="Enter a Topic You Woud Like To Learn More About!" required> 
+                <i class="fa-solid fa-sliders fa-filter fa-lg" onclick="showFilters()"></i>
+		<button type ="submit" class = "button-master">
+                <i class="fas fa-search search_icon fa-lg" id = "searchIcon" style="cursor:pointer;"></i>
+		</button>
+            </div>
+
+            </div>
+            </div>
+            </div>
+            
+            <div class ="advanced-search" style="display: none;">
+                <label for="checkbox1">
+                    <input type="checkbox" id="use-congress" name="use-congress" value=True checked> Use Congress Data <i class="fa-solid fa-info fa-xs congress-tooltip"></i>
+                    <span class= "tooltiptext"></span>
+                </label>
+        
+                <label for="checkbox2" >
+                    <input type="checkbox" id="use-reddit" name="use-reddit" value=True checked> Use Reddit Data <i class="fa-solid fa-info fa-xs reddit-tooltip""></i>
+                    
+                </label>
+                <label for="checkbox3" >
+                    <input type="checkbox" id="use-general" name="use-general" value=True checked> Use General Knowledge <i class="fa-solid fa-info fa-xs general-tooltip""></i>
+                </label>
+
+                <label for="slider">Context Diversity </label> <i class="fa-solid fa-info fa-xs diversity-tooltip"></i>
+                    <input type="range" id="slider" name="slider" min="0.1" max="1.0" step="0.01" value="0.5" oninput="updateSliderValue(this.value)">
+                    <i id="sliderValue">Current Value: 0.5</i>
+            </div>    
+    </form> 
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for msg in messages %}
+
+        <p>{{ msg }}</p>
+
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+    <div class ="loading-container">
+    <img src="{{ url_for('static', filename='loading.gif') }}"  class="loading-icon" style="display: none;"></i>
+    <p class="sorry" style="display:none">This may take a while...</p>
+    </div>
+
+        <div class="flex-container" id = "arguments" style="display: none;">
+               
+            <!--For every element in a dict of lists output the countents in a card-->
+        {% for core,supporting_arugments in arguments.items() %}
+        <div class="card">
+            <div class = "card-header">
+                <h2>{{ core }}</h2>
+            </div>
+            <div class="card-body">
+                <ul>
+                    {% for arg in supporting_arugments %}
+                    <li>{{ arg }}</li>
+                    {% endfor %}
+                </ul>
+                </div>
+        </div>
+        {% endfor %}
+        </div>
+    </div>
+    </body>
+</html>
