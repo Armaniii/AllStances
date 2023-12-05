@@ -56,8 +56,8 @@ openai_ef = embedding_functions.OpenAIEmbeddingFunction(api_key = os.environ.get
 persist_directory = '/home/arman/allsides/chroma/'
 db_client = chromadb.PersistentClient(path=persist_directory)
 
-llm = ChatOpenAI(model_name='gpt-3.5-turbo-16k', temperature=0.7)
-#llm_comprehension = ChatOpenAI(model_name='gpt-4',temperature=0.5)
+llm = ChatOpenAI(model_name='gpt-3.5-turbo-16k', temperature=0.4)
+llm_comprehension = ChatOpenAI(model_name='gpt-4',temperature=0.4)
 
 
 try:
@@ -91,20 +91,21 @@ class RedditPromptTemplate(StringPromptTemplate):
 
   def format(self, **kwargs) -> str:
     context_query = """
-    "Reddit Arguments: "{reddit_context}\n
+    "Reddit Arguments: "{reddit_context} \n
     "Congress Argument: " {congress_context} \n    
 
     # If there is reddit_context cite each argument as (Source: Reddit) if its empty do note cite Reddit as a Source. \n
     # If there is congress_context cite each argument as (Source: Congress). If its empty do not cite Congress as a Source. \n 
-    # For all the arguments given, organize them such that there is a core argument followed by similar arguments, pro or against the topic {topic}. A core argument is centered around a concept or topic. A supporting argument is an argument that supports the core argument. \n
+    # For all the arguments given, organize them such that there is a core argument followed by supporting arguments. A core argument is centered around a concept or topic. A supporting argument is an argument that supports the core argument. \n
     # return the output as a python dictionary object, where the key is the core argument and the value is a list of supporting arguments. Return only the python dictionary object and nothing else. \n
-    # For example: \n
+    # Example output: \n
     # {{"The United States should not be involved in the war in Afghanistan" : ["The United States should not be involved in the war in Afghanistan because it is a waste of money (Source: Reddit)", "The United States should not be involved in the war in Afghanistan because it is a waste of lives (Source: Congress)"]}} \n
-    # \n
+    
     # Perform these steps without incorprating any bias into the decision.\n
     # {use_general} \n
-    # If using General Knowledge cite each argument that came from general knowledge as (Source: General Knowledge)\n
-    """
+    # If using General Knowledge cite the knowledge source from which it came from 'GMOs are not harmful to the environment. (Source: Nature.org)'\n
+    # If there is not enough information on the topic provided return the dictionary object "{{"Not enough data":["Please try again"]}}"\n 
+   """
     
     return context_query.format(**kwargs)
 
@@ -113,14 +114,14 @@ class RedditPromptTemplate(StringPromptTemplate):
 def retrieve_reddit(topic,diversity):
 
   res = RetrievalQA.from_chain_type(llm=llm,chain_type='stuff',retriever=langchain_chroma_reddit.as_retriever(search_type="mmr",search_kwargs={'k':40,'fetch_k':40,'lambda_mult':diversity}))
-  arguments = res.run("Find arguments both in favor of and against " + topic + " or concepts relating to " + topic + ". An argument is a statement that contains a claim supported by at least one premise. They are also authorative declarative statements.")# Write at the end of the output (Source: Reddit_
+  arguments = res.run("Find arguments made towards " + topic + " or concepts relating to " + topic + ". An argument is a statement that contains a claim supported by at least one premise. They are also authorative declarative statements.")# Write at the end of the output (Source: Reddit_
   print(arguments)
   return arguments 
 
 
 def retrieve_congress(topic,diversity):
   res = RetrievalQA.from_chain_type(llm=llm,chain_type='stuff',retriever=langchain_chroma_congress.as_retriever(search_type="mmr",search_kwargs={'k':40,'fetch_k':40,'lambda_mult':diversity}))
-  arguments = res.run("Find arguments both in favor of and against " + topic + " or concepts relating to " + topic + ". An argument is a statement that contains a claim supported by at least one premise. They are also authorative declarative statements.")
+  arguments = res.run("Find arguments made towards " + topic + " or concepts relating to " + topic + ". An argument is a statement that contains a claim supported by at least one premise. They are also authorative declarative statements.")
  
   print(arguments)
   return arguments
@@ -135,12 +136,12 @@ def complete(topic, reddit_context, congress_context,use_general):
   prompt_template = RedditPromptTemplate(input_variables=["reddit_context", "congress_context", "topic","use_general"])#,partial_variables={"format_instructions":format_instructions})
 
   if use_general:
-    response=  llm(messages=[SystemMessage(content=prompt_template.format(reddit_context=reddit_context,
+    response=  llm_comprehension(messages=[SystemMessage(content=prompt_template.format(reddit_context=reddit_context,
                                      congress_context=congress_context,
-                                     topic=topic,use_general="Use General Knowledge to add arguments not stated and reference each argument as: (Source: General Knowledge)"))        ]).content
+                                     topic=topic,use_general="Use any source of information to perform the task. Perform the task yourself to the best of your ability."))        ]).content
     
   else:
-    response=  llm(messages=[SystemMessage(content=prompt_template.format(reddit_context=reddit_context,
+    response=  llm_comprehension(messages=[SystemMessage(content=prompt_template.format(reddit_context=reddit_context,
                                       congress_context=congress_context,
                                       topic=topic,use_general=""))        ]).content
   
